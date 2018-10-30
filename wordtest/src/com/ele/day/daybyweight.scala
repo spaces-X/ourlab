@@ -1,8 +1,15 @@
 package com.ele.day
 
+import java.io.{StringReader, StringWriter}
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
+import org.json4s.jackson.Serialization
+import org.json4s.jackson.Serialization.{read, write}
+import scala.collection.JavaConversions._
+import au.com.bytecode.opencsv.{CSVReader, CSVWriter}
 
 /*
  * 按照车重和日期统计收费金额 
@@ -33,7 +40,14 @@ object daybyweight {
         ((time,vtype),cash)
     }
     val txt = mapped.reduceByKey((x,y)=>x+y)
-    txt.repartition(1).sortByKey(true, 1).saveAsTextFile("hdfs://bigdata01:9000/home/guizhou/Elec_dayvtype_byweight")
+    txt.repartition(1).sortByKey(true)
+    .map(x=>List(x._1._1,x._1._2,x._2.toString()).toArray).mapPartitions{
+      data=>
+        val stringWriter = new StringWriter()
+        val csvWriter = new CSVWriter(stringWriter)
+        csvWriter.writeAll(data.toList)
+        Iterator(stringWriter.toString)
+    }.saveAsTextFile("hdfs://bigdata01:9000/home/guizhou/Elec_dayvtype_byweight")
     
   }
 }
