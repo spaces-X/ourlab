@@ -21,6 +21,11 @@ object monthbytype {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setMaster("spark://bigdata02:7077").setAppName("elemonthbytype");
     val sc = new SparkContext(conf);
+    if(args.length!=5){
+      println("your args length "+args.length+" is not suit for this program")
+      println(" please input the price of diffent type '11 12 13 14 15' ")
+      exit(0)
+    }
     val lines = sc.textFile("hdfs://bigdata01:9000/home/guizhou/csv/exlist*201701.csv")
     val head = lines.take(2)
     var filterline = lines.filter{
@@ -33,6 +38,11 @@ object monthbytype {
         val items = x.split(",")
         items(4).length>0 && items(14).length>0 && items(16).length>0 && items(23).length>0 && items(20).toInt>10 && items(20).toInt<16 && items(23).toDouble>0
     }
+     // 过滤完成！
+    
+    /*
+     * 读取 站间表格 并映射为map
+     * */
     var dislines = sc.textFile("hdfs://bigdata01:9000/home/guizhou/csv/dis_station.csv")   // 站间距离表格
     var temp = dislines.first()
     dislines = dislines.filter{
@@ -53,7 +63,8 @@ object monthbytype {
 //    val dislineslist = dislines.take(num)
 //    var i =dislineslist(0)
 //    
-    var chargebytype = Array(0.52,1.22,2.1,2.62,3.32)     // 最低档 贵州
+    // 获取费率
+    var chargebytype = args.map{_.toDouble}    
     val dismapped = filterline.map{
       x=>
         val items = x.split(",")
@@ -79,7 +90,7 @@ object monthbytype {
         val csvWriter = new CSVWriter(stringWriter)
         csvWriter.writeAll(data.toList)
         Iterator(stringWriter.toString)
-    }.saveAsTextFile("hdfs://bigdata01:9000/home/guizhou/all/All_monthvtype_bytype")
-    
+    }.saveAsTextFile("hdfs://bigdata01:9000/home/guizhou/all/"+args(0)+"/All_monthvtype_bytype")
+    println("price:"+args)
   }
 }

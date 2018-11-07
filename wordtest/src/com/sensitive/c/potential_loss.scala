@@ -15,9 +15,11 @@ import shapeless.ops.nat.ToInt
 
 object potential_loss {
   def main(args: Array[String]): Unit = {
-    if (args.length<1)
+    if (args.length!=6)
     {
-      println("please add the argument of sensitive factor 'c'")
+      println("your args length "+args.length+" is not suit for this program")
+      println("please add the argument of sensitive factor 'c' and 5 prices of different type")
+      exit(1)
     }
     val conf = new SparkConf().setMaster("spark://bigdata02:7077").setAppName("all daybytype");
     val sc = new SparkContext(conf);
@@ -48,7 +50,10 @@ object potential_loss {
         ((origin,dest),dis)
     }
     var dismap = distance.collectAsMap() // 得到 不同站点编号到距离的映射(string,string) -> double 
-    var chargebytype = Array(0.52,1.22,2.1,2.62,3.32)     // 最低档 贵州
+//    var chargebytype = Array(0.52,1.22,2.1,2.62,3.32)     // 最低档 贵州
+    var buffer = args.toBuffer
+    buffer.remove(0)
+    var chargebytype = buffer.toArray.map(_.toDouble)
     val dismapped = filterline.map{           // map 出按type收费亏了的车的（cash，1）cash 和车次
       x=>
         val items = x.split(",")
@@ -82,7 +87,8 @@ object potential_loss {
         val csvWriter = new CSVWriter(stringWriter)
         csvWriter.writeAll(data.toList)
         Iterator(stringWriter.toString)
-    }.saveAsTextFile("hdfs://bigdata01:9000/home/guizhou/potential/All_dayvtype_byvtype")
+    }.saveAsTextFile("hdfs://bigdata01:9000/home/guizhou/potential/"+"c"+args(0)+"/"+args(1)+"/All_dayvtype_byvtype")
+    println("c price:"+args)
   
   
   }
