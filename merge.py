@@ -19,3 +19,5 @@ all_data = pd.merge(all_data,to_add,left_on='ID',right_on='ID',how='left')
 print(all_data)
 print(all_data.shape[0])
 all_data.to_csv("收费站信息汇总_gbk.csv",encoding='gbk',index=None)
+
+## test
