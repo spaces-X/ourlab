@@ -64,6 +64,14 @@ all_data = pd.merge(all_data,to_add,left_on=['statName地图','provName'],right_
 to_add = pd.read_csv("互联网收费站.csv")
 all_data = pd.merge(all_data,to_add,left_on='ID',right_on='ID',how='left')
 
+
+to_add1 = pd.read_csv("sta_id2sta_type.csv",encoding='gbk')
+to_add1 = to_add1[to_add1['STATION_TYPE']!='NOT_PROVINCE_STATION']
+to_add2 = pd.read_csv("收费广场(全).csv",encoding='gbk').drop_duplicates(subset='TOLL_STATION_ID',keep='first')
+to_add2 = to_add2[~to_add2['TOLL_STATION_ID'].isin(to_add1['ID']) ]
+to_add2 = to_add2[['TOLL_STATION_ID','PLAZA_TYPE']]
+
+
 print(all_data)
 print(all_data.shape[0])
 all_data.to_csv("收费站信息汇总_gbk.csv",encoding='gbk',index=None)

@@ -9,3 +9,30 @@
 
 '''
 import pandas as pd
+from numpy import nan
+
+data = pd.read_csv('收费站信息汇总.csv')
+# data = pd.concat([data,pd.DataFrame(columns=['STATION_ID','STATION_NAME','STATION_PRO','STATION_TYPE','STATION_LNG','STATION_LAT'])])
+data['STATION_ID']=data['ID']
+data['STATION_Name']=data['STATION_NAME']
+data['STATION_PRO']=data['PROVINCE']
+to_add = pd.read_csv("station_id2type.csv")
+data = pd.merge(data,to_add,how='left',on='ID')
+data['STATION_LNG']=data['lng_y']
+data['STATION_LAT']=data['lat_y']
+data['DATA_FROM_SOURCE'] = 0                  # 默认选取掌上通数据
+index1 = data['STATION_LNG'].isnull() | data['STATION_LAT'].isnull()
+data.loc[index1,['STATION_LNG']] = data[index1]['slng']
+data.loc[index1,['STATION_LAT']] = data[index1]['slat']
+data.loc[index1,['DATA_FROM_SOURCE']] = 1     # 1代表收费站交易数据
+
+index2 = data['STATION_LNG'].isnull() | data['STATION_LAT'].isnull()
+data.loc[index2,['STATION_LNG']] = data[index2]['lng_x']
+data.loc[index2,['STATION_LAT']] = data[index2]['lat_x']
+data.loc[index2,['DATA_FROM_SOURCE']] = 2  
+
+index3 = data['STATION_LNG'].isnull() | data['STATION_LAT'].isnull()
+data.loc[index3,['DATA_FROM_SOURCE']] = 3     # 3代表 没有地理信息
+
+data.to_csv("收费站信息汇总(全).csv",index=None)
+data.to_csv("收费站信息汇总(全)_gbk.csv",index=None,encoding='gbk')
