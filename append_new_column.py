@@ -14,7 +14,7 @@ from numpy import nan
 data = pd.read_csv('收费站信息汇总.csv')
 # data = pd.concat([data,pd.DataFrame(columns=['STATION_ID','STATION_NAME','STATION_PRO','STATION_TYPE','STATION_LNG','STATION_LAT'])])
 data['STATION_ID']=data['ID']
-data['STATION_Name']=data['STATION_NAME']
+data['STATION_Name']=data['Name']
 data['STATION_PRO']=data['PROVINCE']
 to_add = pd.read_csv("station_id2type.csv")
 data = pd.merge(data,to_add,how='left',on='ID')
